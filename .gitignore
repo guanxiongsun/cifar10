@@ -2,3 +2,5 @@
 checkpoints/
 logs*
 cifar_tf.py
+*.pyc
+cifar-10-batches-py/
