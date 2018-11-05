@@ -1,3 +1,4 @@
 .idea/
 checkpoints/
 logs*
+cifar_tf.py
