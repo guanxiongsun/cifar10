@@ -9,7 +9,7 @@ import data_generater
 import models
 import load_data
 
-model_names = ['alex_net', 'alex_residual', 'alex_dense']
+model_names = ['alex_net', 'alex_residual', 'alex_wrn']
 model_name = model_names[0]
 random_erasing = False
 
@@ -30,7 +30,7 @@ if model_name == 'alex_residual':
 elif model_name == 'alex_net':
     outputs = models.alex_net(inputs)
 else:
-    pass
+    outputs = models.alex_wrn(inputs)
 
 model = Model(inputs=inputs, outputs=outputs)
 model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.0001), metrics=['accuracy'])

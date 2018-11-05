@@ -11,7 +11,7 @@ def get(is_random_erasing):
     """
     if is_random_erasing:
         data_generator = ImageDataGenerator(
-            rotation_range=10,  # randomly rotate images in the range (degrees, 0 to 180)
+            rotation_range=10,  # degrees, 0 to 180
             width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
             height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
             horizontal_flip=True,  # randomly flip images
@@ -20,7 +20,7 @@ def get(is_random_erasing):
         )
     else:
         data_generator = ImageDataGenerator(
-            rotation_range=10,  # randomly rotate images in the range (degrees, 0 to 180)
+            rotation_range=10,  # degrees, 0 to 180
             width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
             height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
             horizontal_flip=True,  # randomly flip images
