@@ -10,13 +10,13 @@ import models
 import load_data
 
 model_names = ['alex_net', 'alex_residual', 'alex_wrn']
-model_name = model_names[0]
-random_erasing = False
+model_name = model_names[2]
+random_erasing = True
 
 # Training params.
 save_path = 'checkpoints'
 batch_size = 16
-epochs = 50
+epochs = 100
 num_classes = 10
 
 # Get cifar10 dataset
@@ -33,7 +33,7 @@ else:
     outputs = models.alex_wrn(inputs)
 
 model = Model(inputs=inputs, outputs=outputs)
-model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.0001), metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.001), metrics=['accuracy'])
 model.summary()
 
 # Prepare model saving directory.

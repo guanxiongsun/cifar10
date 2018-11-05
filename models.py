@@ -167,6 +167,6 @@ def alex_wrn(input_data, nb_classes=10, N=4, k=10, dropout=0.0):
     x = Activation('relu')(x)
     x = AveragePooling2D((8, 8))(x)
     x = Flatten()(x)
-    outputs = Dense(nb_classes, W_regularizer=l2(weight_decay), activation='softmax')(x)
+    outputs = Dense(nb_classes, kernel_regularizer=l2(weight_decay), activation='softmax')(x)
 
     return outputs
