@@ -47,11 +47,4 @@ def get_cifar10():
     x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, channels)
     input_shape = (img_rows, img_cols, channels)
 
-    x_train = normalize(x_train)
-    x_test = normalize(x_test)
-
-    # Convert vectors to one hot codes
-    y_train = one_hot_encode(y_train, 10)
-    y_test = one_hot_encode(y_test, 10)
-
     return input_shape, x_train, x_test, y_train, y_test

@@ -7,7 +7,7 @@ import numpy as np
 import os
 import data_generater
 import models
-import load_data
+import load_data as loader
 
 model_names = ['alex_net', 'alex_residual', 'alex_wrn']
 
@@ -24,7 +24,15 @@ epochs = 100
 num_classes = 10
 
 # Get cifar10 dataset
-input_shape, x_train, x_test, y_train, y_test = load_data.get_cifar10()
+input_shape, x_train, x_test, y_train, y_test = loader.get_cifar10()
+
+# Norm
+x_train = loader.normalize(x_train)
+x_test = loader.normalize(x_test)
+
+# Convert vectors to one hot codes
+y_train = loader.one_hot_encode(y_train, 10)
+y_test = loader.one_hot_encode(y_test, 10)
 
 # Start model definition.
 inputs = keras.layers.Input(shape=input_shape)

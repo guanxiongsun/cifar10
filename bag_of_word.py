@@ -7,35 +7,22 @@ from sklearn.cluster import KMeans
 from sklearn import svm
 import numpy as np
 import time
-import load_data
+import load_data as loader
 
-input_shape, x_train, x_test, y_train, y_test = load_data.get_cifar10()
+# Get cifar10 dataset
+input_shape, x_train, x_test, y_train, y_test = loader.get_cifar10()
 
-
-# def score(clf, X, Y, folds=2, verbose=False):
-#     predictions = np.zeros(len(Y))
-#     kf = KFold(n_splits=folds, shuffle=True)
-#
-#     for train, test in kf.split(X):
-#         clf.fit(X[train], Y[train])
-#         predictions[test] = clf.predict(X[test])
-#         if verbose:
-#             print("Fold : {}".format(accuracy_score(Y[test], predictions[test])))
-#         #     for i, (train, test) in enumerate(KFold(len(X), n_folds=folds, shuffle=True)):
-#     #         clf.fit(X[train], Y[train])
-#     #         predictions[test] = clf.predict(X[test])
-#     #         if verbose:
-#     #             print("Fold {}: {}".format(i + 1, accuracy_score(Y[test], predictions[test])))
-#     return accuracy_score(Y, predictions)
+# # Norm
+# x_train = loader.normalize(x_train)
+# x_test = loader.normalize(x_test)
 
 
 def score(clf, X, Y, verbose=False):
     # Pipleline : Extract_patches, Kmeans, SVM
     clf.fit(X, Y)
-    predictions = clf.predict(x_test)
-    if verbose:
-        print("ACC : {}".format(accuracy_score(y_test, predictions)))
-    return accuracy_score(Y, predictions)
+    predictions = clf.predict(x_test[0:100])
+    print("ACC : {}".format(accuracy_score(y_test[0:100], predictions)))
+    return
 
 
 def rgb2gray(img):
@@ -43,7 +30,7 @@ def rgb2gray(img):
     return gray
 
 
-class PatchExtractor(sklearn.base.BaseEstimator):
+class PatchExtractor:
     def __init__(self, patch_size=(8, 8)):
         self.patch_size = patch_size
 
@@ -66,10 +53,34 @@ class PatchExtractor(sklearn.base.BaseEstimator):
         return patches
 
 
-class Codebook():
+class SiftExtractor:
+    def __init__(self):
+        self.sift_object = cv2.xfeatures2d.SIFT_create()
+
+    def _extract_sift(self, x):
+        """ Extracts SIFT descriptor from image """
+
+        keypoints, descriptors = self.sift_object.detectAndCompute(x, None)
+        # print (descriptors.shape)
+        return descriptors
+
+    def fit(self, X, Y=None):
+        patches = np.concatenate([self._extract_sift(rgb2gray(x)) for x in X])
+
+        print(patches.shape)
+        return self
+
+    def transform(self, X, Y=None):
+        """ RGB to gray, and do extraction """
+        patches = np.array([self._extract_sift(rgb2gray(x)) for x in X])
+        # print (patches.shape)
+        return patches
+
+
+class Codebook:
     def __init__(self, size=10):
         self.size = size
-        self.clusterer = KMeans(n_clusters=size, verbose=True)
+        self.clusterer = KMeans(n_clusters=size, verbose=False)
 
     def _get_histogram(self, x):
         """ Returns histogram of codewords for given features """
@@ -92,10 +103,12 @@ class Codebook():
         return np.array([self._get_histogram(x) for x in X])
 
 
-X = x_train
-Y = y_train
+X = x_train[0:500]
+Y = y_train[0:500]
+Y = Y.reshape(-1)
 patcher = PatchExtractor(patch_size=(8, 8))
-codebook = Codebook(size=128)
-clf = svm.SVC(kernel='linear')
-pipeline = Pipeline([("Patch_extractor", patcher), ("Codebook", codebook), ("svm", clf)])
-score(pipeline, X, Y, verbose=True)
+sift = SiftExtractor()
+codebook = Codebook(size=50)
+clf = svm.SVC(kernel='rbf')
+pipeline = Pipeline([("Feature_extractor", sift), ("Codebook", codebook), ("svm", clf)])
+score(pipeline, X, Y, verbose=False)
