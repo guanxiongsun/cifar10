@@ -49,7 +49,7 @@ file_path = os.path.join(save_dir, model_name + '.h5')
 
 # Prepare callbacks for model saving and for learning rate decaying.
 checkpoint = ModelCheckpoint(filepath=file_path, verbose=1, save_best_only=True)
-lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=5, min_lr=0.5e-6)
+lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=10, min_lr=0.5e-6)
 
 # Add TensorBoard callbacks
 tbCallBack = keras.callbacks.TensorBoard(log_dir='./logs_' + model_name, write_grads=True, write_images=True)
