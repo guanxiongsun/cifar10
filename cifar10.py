@@ -10,8 +10,12 @@ import models
 import load_data
 
 model_names = ['alex_net', 'alex_residual', 'alex_wrn']
+
+# Select Models
 model_name = model_names[2]
-random_erasing = True
+
+# Use RE or not
+random_erasing = False
 
 # Training params.
 save_path = 'checkpoints'
@@ -26,14 +30,15 @@ input_shape, x_train, x_test, y_train, y_test = load_data.get_cifar10()
 inputs = keras.layers.Input(shape=input_shape)
 
 if model_name == 'alex_residual':
-    outputs = models.alex_residual(inputs)
+    outputs = models.AlexResidual(inputs).get_output()
 elif model_name == 'alex_net':
-    outputs = models.alex_net(inputs)
+    outputs = models.AlexNet(inputs).get_output()
 else:
-    outputs = models.alex_wrn(inputs)
+    outputs = models.AlexWRN(inputs).get_output()
 
 model = Model(inputs=inputs, outputs=outputs)
-model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.001), metrics=['accuracy'])
+learn_rates = {'alex_net': 0.001, 'alex_residual': 0.0001, 'alex_wrn': 0.001}
+model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=learn_rates[model_name]), metrics=['accuracy'])
 model.summary()
 
 # Prepare model saving directory.
