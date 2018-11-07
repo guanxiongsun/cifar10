@@ -1,7 +1,145 @@
 from tensorflow import keras
-from tensorflow.keras.layers import Dense, Conv2D, Dropout, BatchNormalization, Activation, Add
+from tensorflow.keras.layers import Dense, Conv2D, Dropout, BatchNormalization, Activation, \
+    Add, concatenate, GlobalAveragePooling2D
 from tensorflow.keras.layers import MaxPooling2D, AveragePooling2D, Flatten
 from tensorflow.keras.regularizers import l2
+
+
+def conv2d_bn(x, filters, num_row, num_col, padding='same', strides=(1, 1)):
+    """Helper function conv + BN + ReLU for inception."""
+
+    x = Conv2D(filters, (num_row, num_col), kernel_regularizer=l2(1e-5), strides=strides, padding=padding, use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    return x
+
+
+class AlexInception:
+
+    def __init__(self, input_data):
+        self.input_data = input_data
+
+    def get_output(self):
+        return self.alex_inception()
+
+    def alex_inception(self, classes=10):
+        """Inception architecture."""
+
+        x = conv2d_bn(self.input_data, 32, 3, 3, strides=1, padding='valid')
+        x = conv2d_bn(x, 32, 3, 3, padding='valid')
+        x = conv2d_bn(x, 64, 3, 3)
+        x = MaxPooling2D((3, 3), strides=(2, 2))(x)
+
+        # mixed 0, 1, 2: 35 x 35 x 256
+        branch1x1 = conv2d_bn(x, 64, 1, 1)
+
+        branch5x5 = conv2d_bn(x, 48, 1, 1)
+        branch5x5 = conv2d_bn(branch5x5, 64, 5, 5)
+
+        branch3x3dbl = conv2d_bn(x, 64, 1, 1)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3)
+
+        branch_pool = AveragePooling2D((3, 3), strides=(1, 1), padding='same')(x)
+        branch_pool = conv2d_bn(branch_pool, 32, 1, 1)
+        x = concatenate([branch1x1, branch5x5, branch3x3dbl, branch_pool])
+
+        # mixed 1: 35 x 35 x 256
+        branch1x1 = conv2d_bn(x, 64, 1, 1)
+
+        branch5x5 = conv2d_bn(x, 48, 1, 1)
+        branch5x5 = conv2d_bn(branch5x5, 64, 5, 5)
+
+        branch3x3dbl = conv2d_bn(x, 64, 1, 1)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3)
+
+        branch_pool = AveragePooling2D((3, 3), strides=(1, 1), padding='same')(x)
+        branch_pool = conv2d_bn(branch_pool, 64, 1, 1)
+        x = concatenate([branch1x1, branch5x5, branch3x3dbl, branch_pool])
+
+        # mixed 2: 35 x 35 x 256
+        branch1x1 = conv2d_bn(x, 64, 1, 1)
+
+        branch5x5 = conv2d_bn(x, 48, 1, 1)
+        branch5x5 = conv2d_bn(branch5x5, 64, 5, 5)
+
+        branch3x3dbl = conv2d_bn(x, 64, 1, 1)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3)
+
+        branch_pool = AveragePooling2D((3, 3), strides=(1, 1), padding='same')(x)
+        branch_pool = conv2d_bn(branch_pool, 64, 1, 1)
+        x = concatenate([branch1x1, branch5x5, branch3x3dbl, branch_pool])
+
+        # mixed 3: 17 x 17 x 768
+        branch3x3 = conv2d_bn(x, 384, 3, 3, strides=(2, 2), padding='valid')
+
+        branch3x3dbl = conv2d_bn(x, 64, 1, 1)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3)
+        branch3x3dbl = conv2d_bn(branch3x3dbl, 96, 3, 3, strides=(2, 2), padding='valid')
+
+        branch_pool = MaxPooling2D((3, 3), strides=(2, 2))(x)
+        x = concatenate([branch3x3, branch3x3dbl, branch_pool])
+
+        # mixed 4: 17 x 17 x 768
+        branch1x1 = conv2d_bn(x, 192, 1, 1)
+
+        branch7x7 = conv2d_bn(x, 128, 1, 1)
+        branch7x7 = conv2d_bn(branch7x7, 128, 1, 7)
+        branch7x7 = conv2d_bn(branch7x7, 192, 7, 1)
+
+        branch7x7dbl = conv2d_bn(x, 128, 1, 1)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 128, 7, 1)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 128, 1, 7)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 128, 7, 1)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 192, 1, 7)
+
+        branch_pool = AveragePooling2D((3, 3), strides=(1, 1), padding='same')(x)
+        branch_pool = conv2d_bn(branch_pool, 192, 1, 1)
+        x = concatenate([branch1x1, branch7x7, branch7x7dbl, branch_pool])
+
+        # mixed 5, 6: 17 x 17 x 768
+        for i in range(2):
+            branch1x1 = conv2d_bn(x, 192, 1, 1)
+
+            branch7x7 = conv2d_bn(x, 160, 1, 1)
+            branch7x7 = conv2d_bn(branch7x7, 160, 1, 7)
+            branch7x7 = conv2d_bn(branch7x7, 192, 7, 1)
+
+            branch7x7dbl = conv2d_bn(x, 160, 1, 1)
+            branch7x7dbl = conv2d_bn(branch7x7dbl, 160, 7, 1)
+            branch7x7dbl = conv2d_bn(branch7x7dbl, 160, 1, 7)
+            branch7x7dbl = conv2d_bn(branch7x7dbl, 160, 7, 1)
+            branch7x7dbl = conv2d_bn(branch7x7dbl, 192, 1, 7)
+
+            branch_pool = AveragePooling2D(
+                (3, 3), strides=(1, 1), padding='same')(x)
+            branch_pool = conv2d_bn(branch_pool, 192, 1, 1)
+            x = concatenate([branch1x1, branch7x7, branch7x7dbl, branch_pool])
+
+        # mixed 7: 17 x 17 x 768
+        branch1x1 = conv2d_bn(x, 192, 1, 1)
+
+        branch7x7 = conv2d_bn(x, 192, 1, 1)
+        branch7x7 = conv2d_bn(branch7x7, 192, 1, 7)
+        branch7x7 = conv2d_bn(branch7x7, 192, 7, 1)
+
+        branch7x7dbl = conv2d_bn(x, 192, 1, 1)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 192, 7, 1)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 192, 1, 7)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 192, 7, 1)
+        branch7x7dbl = conv2d_bn(branch7x7dbl, 192, 1, 7)
+
+        branch_pool = AveragePooling2D((3, 3), padding='same', strides=(1, 1))(x)
+        branch_pool = conv2d_bn(branch_pool, 192, 1, 1)
+        x = concatenate([branch1x1, branch7x7, branch7x7dbl, branch_pool])
+
+        # Classification block
+        x = GlobalAveragePooling2D(name='avg_pool')(x)
+        model_output = Dense(classes, activation='softmax', name='predictions')(x)
+
+        return model_output
 
 
 class AlexNet:
@@ -196,7 +334,7 @@ class AlexWRN:
         :param dropout: Adds dropout if value is greater than 0.0
         :return: outputs
         """
-        x = Conv2D(64, kernel_size=5, padding='same', kernel_initializer='he_normal',
+        x = Conv2D(64, kernel_size=3, padding='same', kernel_initializer='he_normal',
                    kernel_regularizer=l2(self.weight_decay), use_bias=False)(self.input_data)
         x = BatchNormalization(momentum=0.1, epsilon=1e-5, gamma_initializer='uniform')(x)
         x = Activation('relu')(x)
@@ -204,25 +342,27 @@ class AlexWRN:
 
         for i in range(N - 1):
             x = self.conv1_block(x, k, dropout)
-
         x = BatchNormalization(momentum=0.1, epsilon=1e-5, gamma_initializer='uniform')(x)
         x = Activation('relu')(x)
-        x = self.expand_conv(x, 32, k, strides=(2, 2))
+
+        x = self.expand_conv(x, 32, k, strides=2)
 
         for i in range(N - 1):
             x = self.conv2_block(x, k, dropout)
-
         x = BatchNormalization(momentum=0.1, epsilon=1e-5, gamma_initializer='uniform')(x)
         x = Activation('relu')(x)
-        x = self.expand_conv(x, 64, k, strides=(2, 2))
+
+        x = self.expand_conv(x, 64, k, strides=2)
 
         for i in range(N - 1):
             x = self.conv3_block(x, k, dropout)
-
         x = BatchNormalization(momentum=0.1, epsilon=1e-5, gamma_initializer='uniform')(x)
         x = Activation('relu')(x)
+
         x = AveragePooling2D((8, 8))(x)
         x = Flatten()(x)
         outputs = Dense(nb_classes, activation='softmax')(x)
 
         return outputs
+
+
