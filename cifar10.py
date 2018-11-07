@@ -15,12 +15,12 @@ model_names = {0: 'alex_net', 1: 'alex_vgg', 2: 'alex_residual',
 model_name = model_names[3]
 
 # Use RE or not
-random_erasing = False
+random_erasing = True
 
 # Training params.
 save_path = 'checkpoints'
 batch_size = 256
-epochs = 100
+epochs = 120
 num_classes = 10
 
 # Get cifar10 dataset
