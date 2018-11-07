@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 from sklearn import svm
 import numpy as np
 import time
-import load_data as loader
+from utils import load_data as loader
 
 # Get cifar10 dataset
 input_shape, x_train, x_test, y_train, y_test = loader.get_cifar10()

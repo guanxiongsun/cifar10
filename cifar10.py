@@ -5,9 +5,8 @@ from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.models import Model
 import numpy as np
 import os
-import data_generater
-import models
-import load_data as loader
+from deep_methods import models
+from utils import load_data as loader, data_generater
 
 model_names = {0: 'alex_net', 1: 'alex_vgg', 2: 'alex_residual',
                3: 'alex_wrn', 4: 'alex_inception', 5: 'alex_dense'}

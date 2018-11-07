@@ -1,5 +1,5 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from random_eraser import get_random_eraser
+from utils.random_eraser import get_random_eraser
 
 
 def get(is_random_erasing):
