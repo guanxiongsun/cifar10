@@ -13,7 +13,7 @@ model_names = {0: 'alex_net', 1: 'alex_vgg', 2: 'alex_residual',
                3: 'alex_wrn', 4: 'alex_inception', 5: 'alex_dense'}
 
 # Select Models
-model_name = model_names[5]
+model_name = model_names[3]
 
 # Use RE or not
 random_erasing = False

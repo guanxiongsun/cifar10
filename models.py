@@ -410,8 +410,8 @@ class AlexDense:
         """
         blocks = [6, 12, 24, 16]
 
-        x = ZeroPadding2D(padding=((3, 3), (3, 3)))(self.input_data)
-        x = Conv2D(64, 7, strides=2, use_bias=False)(x)
+        x = ZeroPadding2D(padding=((1, 1), (1, 1)))(self.input_data)
+        x = Conv2D(64, 3, strides=1, use_bias=False)(x)
         x = BatchNormalization(epsilon=1.001e-5)(x)
         x = Activation('relu')(x)
         x = ZeroPadding2D(padding=((1, 1), (1, 1)))(x)
