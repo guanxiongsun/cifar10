@@ -1,14 +1,15 @@
-import cv2
 from sklearn.feature_extraction import image
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
+from sklearn.decomposition import PCA
 from sklearn import svm
 import numpy as np
 import time
 from utils import load_data as loader
-from traditional_methods import fisher_vectors as fv
+import fisher_vectors as fv
+import cv2
 
 # Get cifar10 dataset
 input_shape, x_train, x_test, y_train, y_test = loader.get_cifar10()
@@ -23,6 +24,7 @@ def score(clf, X, Y):
 
 
 def rgb2gray(img):
+    # print (img.shape)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return gray
 
@@ -59,18 +61,19 @@ class SiftExtractor:
 
         keypoints, descriptors = self.sift_object.detectAndCompute(x, None)
         # print (descriptors.shape)
-        return descriptors
+        if descriptors is not None:
+            return descriptors
+        else:
+            print ("None descriptor!")
+            return np.zeros([1, 128])
 
     def fit(self, X, Y=None):
-        patches = np.concatenate([self._extract_sift(rgb2gray(x)) for x in X])
-
-        print(patches.shape)
         return self
 
     def transform(self, X, Y=None):
         """ RGB to gray, and do extraction """
         patches = np.array([self._extract_sift(rgb2gray(x)) for x in X])
-        # print (patches.shape)
+        print (patches.shape)
         return patches
 
 
@@ -135,9 +138,9 @@ class FisherVectorBook:
 
 
 # Number of samples to train [0, 50000]
-nsamples = 500
+nsamples = 50000
 # Number of samples to test [0, 10000]
-testsamples = 100
+testsamples = 10000
 X = x_train[0:nsamples]
 Y = y_train[0:nsamples]
 Y = Y.reshape(-1)
@@ -146,9 +149,11 @@ patcher = PatchExtractor(patch_size=(8, 8))
 sift = SiftExtractor()
 fisher = FisherVectorBook(size=64)
 codebook = Codebook(size=64)
+pca = PCA(n_components=64)
 clf = svm.SVC(kernel='rbf', verbose=False)
 
-pipeline = Pipeline([("Feature_extractor", patcher),
+pipeline = Pipeline([("Feature_extractor", sift),
                      ("Codebook", codebook),
+                     # ("PCA", pca),
                      ("svm", clf)])
 score(pipeline, X, Y)
