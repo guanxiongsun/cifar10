@@ -9,13 +9,14 @@ import data_generater
 import models
 import load_data as loader
 
-model_names = ['alex_net', 'alex_vgg', 'alex_residual', 'alex_wrn', 'alex_inception', 'alex_dense']
+model_names = {0: 'alex_net', 1: 'alex_vgg', 2: 'alex_residual',
+               3: 'alex_wrn', 4: 'alex_inception', 5: 'alex_dense'}
 
 # Select Models
-model_name = model_names[4]
+model_name = model_names[5]
 
 # Use RE or not
-random_erasing = True
+random_erasing = False
 
 # Training params.
 save_path = 'checkpoints'

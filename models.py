@@ -17,7 +17,7 @@ def transition_block(x, reduction):
     bn_axis = 3
     x = BatchNormalization(epsilon=1.001e-5)(x)
     x = Activation('relu')(x)
-    x = Conv2D(int(keras.backend.int_shape(x)[bn_axis] * reduction), 1, kernel_regularizer=l2(1e-5), use_bias=False)(x)
+    x = Conv2D(int(keras.backend.int_shape(x)[bn_axis] * reduction), 1, kernel_regularizer=l2(1e-4), use_bias=False)(x)
     x = AveragePooling2D(2, strides=2)(x)
     return x
 
@@ -26,10 +26,10 @@ def conv_block(x, growth_rate):
     """A building block for a dense block."""
     x1 = BatchNormalization(epsilon=1.001e-5)(x)
     x1 = Activation('relu')(x1)
-    x1 = Conv2D(4 * growth_rate, 1, kernel_regularizer=l2(1e-5), use_bias=False)(x1)
+    x1 = Conv2D(4 * growth_rate, 1, kernel_regularizer=l2(1e-4), use_bias=False)(x1)
     x1 = BatchNormalization(epsilon=1.001e-5)(x1)
     x1 = Activation('relu')(x1)
-    x1 = Conv2D(growth_rate, 3, kernel_regularizer=l2(1e-5), padding='same', use_bias=False)(x1)
+    x1 = Conv2D(growth_rate, 3, kernel_regularizer=l2(1e-4), padding='same', use_bias=False)(x1)
     x = concatenate([x, x1])
     return x
 
@@ -68,7 +68,7 @@ class AlexDense:
         x = Activation('relu')(x)
 
         x = GlobalAveragePooling2D()(x)
-        model_output = Dense(10, activation='softmax')(x)
+        model_output = Dense(10, kernel_regularizer=l2(1e-4), activation='softmax')(x)
 
         return model_output
 
