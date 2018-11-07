@@ -5,74 +5,6 @@ from tensorflow.keras.layers import MaxPooling2D, AveragePooling2D, Flatten
 from tensorflow.keras.regularizers import l2
 
 
-def dense_block(x, blocks):
-    """A dense block. """
-    for i in range(blocks):
-        x = conv_block(x, 32)
-    return x
-
-
-def transition_block(x, reduction):
-    """A transition block."""
-    bn_axis = 3
-    x = BatchNormalization(epsilon=1.001e-5)(x)
-    x = Activation('relu')(x)
-    x = Conv2D(int(keras.backend.int_shape(x)[bn_axis] * reduction), 1, kernel_regularizer=l2(1e-4), use_bias=False)(x)
-    x = AveragePooling2D(2, strides=2)(x)
-    return x
-
-
-def conv_block(x, growth_rate):
-    """A building block for a dense block."""
-    x1 = BatchNormalization(epsilon=1.001e-5)(x)
-    x1 = Activation('relu')(x1)
-    x1 = Conv2D(4 * growth_rate, 1, kernel_regularizer=l2(1e-4), use_bias=False)(x1)
-    x1 = BatchNormalization(epsilon=1.001e-5)(x1)
-    x1 = Activation('relu')(x1)
-    x1 = Conv2D(growth_rate, 3, kernel_regularizer=l2(1e-4), padding='same', use_bias=False)(x1)
-    x = concatenate([x, x1])
-    return x
-
-
-class AlexDense:
-
-    def __init__(self, input_data):
-        self.input_data = input_data
-
-    def get_output(self):
-        return self.alex_dense()
-
-    def alex_dense(self):
-        """Instantiates the DenseNet architecture.
-        # Returns
-            A Keras model instance.
-        """
-        blocks = [6, 12, 24, 16]
-
-        x = ZeroPadding2D(padding=((3, 3), (3, 3)))(self.input_data)
-        x = Conv2D(64, 7, strides=2, use_bias=False)(x)
-        x = BatchNormalization(epsilon=1.001e-5)(x)
-        x = Activation('relu')(x)
-        x = ZeroPadding2D(padding=((1, 1), (1, 1)))(x)
-        x = MaxPooling2D(3, strides=2)(x)
-
-        x = dense_block(x, blocks[0])
-        x = transition_block(x, 0.5)
-        x = dense_block(x, blocks[1])
-        x = transition_block(x, 0.5)
-        x = dense_block(x, blocks[2])
-        x = transition_block(x, 0.5)
-        x = dense_block(x, blocks[3])
-
-        x = BatchNormalization(epsilon=1.001e-5)(x)
-        x = Activation('relu')(x)
-
-        x = GlobalAveragePooling2D()(x)
-        model_output = Dense(10, kernel_regularizer=l2(1e-4), activation='softmax')(x)
-
-        return model_output
-
-
 class AlexNet:
 
     def __init__(self, input_data):
@@ -430,5 +362,73 @@ class AlexInception:
         # Classification block
         x = GlobalAveragePooling2D(name='avg_pool')(x)
         model_output = Dense(classes, activation='softmax', name='predictions')(x)
+
+        return model_output
+
+
+def dense_block(x, blocks):
+    """A dense block. """
+    for i in range(blocks):
+        x = conv_block(x, 32)
+    return x
+
+
+def transition_block(x, reduction):
+    """A transition block."""
+    bn_axis = 3
+    x = BatchNormalization(epsilon=1.001e-5)(x)
+    x = Activation('relu')(x)
+    x = Conv2D(int(keras.backend.int_shape(x)[bn_axis] * reduction), 1, kernel_regularizer=l2(1e-4), use_bias=False)(x)
+    x = AveragePooling2D(2, strides=2)(x)
+    return x
+
+
+def conv_block(x, growth_rate):
+    """A building block for a dense block."""
+    x1 = BatchNormalization(epsilon=1.001e-5)(x)
+    x1 = Activation('relu')(x1)
+    x1 = Conv2D(4 * growth_rate, 1, kernel_regularizer=l2(1e-4), use_bias=False)(x1)
+    x1 = BatchNormalization(epsilon=1.001e-5)(x1)
+    x1 = Activation('relu')(x1)
+    x1 = Conv2D(growth_rate, 3, kernel_regularizer=l2(1e-4), padding='same', use_bias=False)(x1)
+    x = concatenate([x, x1])
+    return x
+
+
+class AlexDense:
+
+    def __init__(self, input_data):
+        self.input_data = input_data
+
+    def get_output(self):
+        return self.alex_dense()
+
+    def alex_dense(self):
+        """Instantiates the DenseNet architecture.
+        # Returns
+            A Keras model instance.
+        """
+        blocks = [6, 12, 24, 16]
+
+        x = ZeroPadding2D(padding=((3, 3), (3, 3)))(self.input_data)
+        x = Conv2D(64, 7, strides=2, use_bias=False)(x)
+        x = BatchNormalization(epsilon=1.001e-5)(x)
+        x = Activation('relu')(x)
+        x = ZeroPadding2D(padding=((1, 1), (1, 1)))(x)
+        x = MaxPooling2D(3, strides=2)(x)
+
+        x = dense_block(x, blocks[0])
+        x = transition_block(x, 0.5)
+        x = dense_block(x, blocks[1])
+        x = transition_block(x, 0.5)
+        x = dense_block(x, blocks[2])
+        x = transition_block(x, 0.5)
+        x = dense_block(x, blocks[3])
+
+        x = BatchNormalization(epsilon=1.001e-5)(x)
+        x = Activation('relu')(x)
+
+        x = GlobalAveragePooling2D()(x)
+        model_output = Dense(10, kernel_regularizer=l2(1e-4), activation='softmax')(x)
 
         return model_output
