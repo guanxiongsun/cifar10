@@ -8,8 +8,6 @@ import os
 import data_generater
 import models
 import load_data as loader
-# from tensorflow.keras.applications.densenet import DenseNet121
-# from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 
 model_names = ['alex_net', 'alex_vgg', 'alex_residual', 'alex_wrn', 'alex_inception', 'alex_dense']
 
@@ -17,7 +15,7 @@ model_names = ['alex_net', 'alex_vgg', 'alex_residual', 'alex_wrn', 'alex_incept
 model_name = model_names[4]
 
 # Use RE or not
-random_erasing = False
+random_erasing = True
 
 # Training params.
 save_path = 'checkpoints'
@@ -53,15 +51,6 @@ elif model_name == 'alex_dense':
     outputs = models.AlexDense(inputs).get_output()
 else:
     outputs = None
-
-
-# base_model = DenseNet121(input_tensor=inputs, weights='imagenet', include_top=False)
-# x = base_model.output
-# x = GlobalAveragePooling2D()(x)
-# x = Dense(1024, activation='relu')(x)
-# predictions = Dense(10, activation='softmax')(x)
-#
-# model = Model(inputs=inputs, outputs=predictions)
 
 model = Model(inputs=inputs, outputs=outputs)
 learn_rates = {'alex_net': 1e-3, 'alex_residual': 1e-3, 'alex_wrn': 1e-3,
