@@ -38,6 +38,57 @@ class AlexNet:
         return model_output
 
 
+class AlexVGG:
+
+    def __init__(self, input_data):
+        self.input_data = input_data
+
+    def get_output(self):
+        return self.alex_net()
+
+    def alex_net(self, num_classes=10):
+        # Block 1
+        x = Conv2D(64, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(self.input_data)
+        x = Conv2D(64, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+
+        # Block 2
+        x = Conv2D(128, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        x = Conv2D(128, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+
+        # Block 3
+        x = Conv2D(256, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+
+        # # Block 4
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = MaxPooling2D((2, 2), strides=1, padding='same', name='block4_pool')(x)
+
+        # # Block 5
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
+        # x = MaxPooling2D((2, 2), strides=1, padding='same', name='block5_pool')(x)
+        # Flatten
+        y = Flatten()(x)
+        # Dense1
+        y = Dropout(0.5)(Dense(4096, kernel_regularizer=l2(1e-4), kernel_initializer='he_normal', activation='relu')(y))
+        # Dense2
+        y = Dropout(0.5)(Dense(4096, kernel_regularizer=l2(1e-4), kernel_initializer='he_normal', activation='relu')(y))
+        # Output
+        model_output = Dense(num_classes, kernel_regularizer=l2(1e-4), kernel_initializer='he_normal', activation='softmax')(y)
+
+        return model_output
+
+
 class AlexResidual:
 
     def __init__(self, input_data):

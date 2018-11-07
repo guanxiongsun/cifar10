@@ -8,18 +8,20 @@ import os
 import data_generater
 import models
 import load_data as loader
+from tensorflow.keras.applications.densenet import DenseNet121
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 
-model_names = ['alex_net', 'alex_residual', 'alex_wrn']
+model_names = ['alex_net', 'alex_vgg', 'alex_residual', 'alex_wrn', 'inception', 'alex_dense']
 
 # Select Models
-model_name = model_names[2]
+model_name = model_names[1]
 
 # Use RE or not
 random_erasing = False
 
 # Training params.
 save_path = 'checkpoints'
-batch_size = 16
+batch_size = 256
 epochs = 100
 num_classes = 10
 
@@ -41,11 +43,23 @@ if model_name == 'alex_residual':
     outputs = models.AlexResidual(inputs).get_output()
 elif model_name == 'alex_net':
     outputs = models.AlexNet(inputs).get_output()
+elif model_name == 'alex_vgg':
+    outputs = models.AlexVGG(inputs).get_output()
 else:
     outputs = models.AlexWRN(inputs).get_output()
 
+
+# base_model = DenseNet121(input_tensor=inputs, weights='imagenet', include_top=False)
+# x = base_model.output
+# x = GlobalAveragePooling2D()(x)
+# x = Dense(1024, activation='relu')(x)
+# predictions = Dense(10, activation='softmax')(x)
+#
+# model = Model(inputs=inputs, outputs=predictions)
+
 model = Model(inputs=inputs, outputs=outputs)
-learn_rates = {'alex_net': 0.001, 'alex_residual': 0.0001, 'alex_wrn': 0.001}
+learn_rates = {'alex_net': 1e-3, 'alex_residual': 1e-4, 'alex_wrn': 1e-3,
+               'inception': 1e-3, 'alex_dense': 1e-3, 'alex_vgg': 1e-3}
 model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=learn_rates[model_name]), metrics=['accuracy'])
 model.summary()
 
@@ -57,7 +71,7 @@ file_path = os.path.join(save_dir, model_name + '.h5')
 
 # Prepare callbacks for model saving and for learning rate decaying.
 checkpoint = ModelCheckpoint(filepath=file_path, verbose=1, save_best_only=True)
-lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=10, min_lr=0.5e-6)
+lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=5, min_lr=0.5e-6)
 
 # Add TensorBoard callbacks
 tbCallBack = keras.callbacks.TensorBoard(log_dir='./logs_' + model_name, write_grads=True, write_images=True)
