@@ -64,19 +64,6 @@ class AlexVGG:
         x = Conv2D(256, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
         x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
 
-        # # Block 4
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = MaxPooling2D((2, 2), strides=1, padding='same', name='block4_pool')(x)
-
-        # # Block 5
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer='he_normal', kernel_regularizer=l2(1e-4))(x)
-        # x = MaxPooling2D((2, 2), strides=1, padding='same', name='block5_pool')(x)
         # Flatten
         y = Flatten()(x)
         # Dense1

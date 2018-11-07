@@ -1,4 +1,3 @@
-import sklearn
 import cv2
 from sklearn.feature_extraction import image
 from sklearn.pipeline import Pipeline
@@ -12,16 +11,12 @@ import load_data as loader
 # Get cifar10 dataset
 input_shape, x_train, x_test, y_train, y_test = loader.get_cifar10()
 
-# # Norm
-# x_train = loader.normalize(x_train)
-# x_test = loader.normalize(x_test)
 
-
-def score(clf, X, Y, verbose=False):
+def score(clf, X, Y):
     # Pipleline : Extract_patches, Kmeans, SVM
     clf.fit(X, Y)
-    predictions = clf.predict(x_test[0:100])
-    print("ACC : {}".format(accuracy_score(y_test[0:100], predictions)))
+    predictions = clf.predict(x_test[0:testsamples])
+    print("ACC : {}".format(accuracy_score(y_test[0:testsamples], predictions)))
     return
 
 
@@ -103,12 +98,16 @@ class Codebook:
         return np.array([self._get_histogram(x) for x in X])
 
 
-X = x_train[0:500]
-Y = y_train[0:500]
+# Number of samples to train [0, 50000]
+nsamples = 500
+# Number of samples to test [0, 10000]
+testsamples = 10000
+X = x_train[0:nsamples]
+Y = y_train[0:nsamples]
 Y = Y.reshape(-1)
 patcher = PatchExtractor(patch_size=(8, 8))
 sift = SiftExtractor()
 codebook = Codebook(size=50)
 clf = svm.SVC(kernel='rbf')
-pipeline = Pipeline([("Feature_extractor", sift), ("Codebook", codebook), ("svm", clf)])
-score(pipeline, X, Y, verbose=False)
+pipeline = Pipeline([("Feature_extractor", patcher), ("Codebook", codebook), ("svm", clf)])
+score(pipeline, X, Y)

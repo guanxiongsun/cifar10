@@ -14,7 +14,7 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 model_names = ['alex_net', 'alex_vgg', 'alex_residual', 'alex_wrn', 'inception', 'alex_dense']
 
 # Select Models
-model_name = model_names[1]
+model_name = model_names[2]
 
 # Use RE or not
 random_erasing = False
@@ -74,6 +74,8 @@ checkpoint = ModelCheckpoint(filepath=file_path, verbose=1, save_best_only=True)
 lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=5, min_lr=0.5e-6)
 
 # Add TensorBoard callbacks
+if random_erasing:
+    model_name = model_name + '_re'
 tbCallBack = keras.callbacks.TensorBoard(log_dir='./logs_' + model_name, write_grads=True, write_images=True)
 
 callbacks = [checkpoint, lr_reducer, tbCallBack]
