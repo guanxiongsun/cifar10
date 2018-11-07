@@ -3,10 +3,12 @@ from sklearn.feature_extraction import image
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score
 from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 from sklearn import svm
 import numpy as np
 import time
 from utils import load_data as loader
+from traditional_methods import fisher_vectors as fv
 
 # Get cifar10 dataset
 input_shape, x_train, x_test, y_train, y_test = loader.get_cifar10()
@@ -78,7 +80,9 @@ class Codebook:
         self.clusterer = KMeans(n_clusters=size, verbose=False)
 
     def _get_histogram(self, x):
-        """ Returns histogram of codewords for given features """
+        """ Returns histogram of codewords for given features
+            x.shape = [n_descriptor, dscpt_dimension]
+        """
         # Assign each patch to a cluster
         clusters = self.clusterer.predict(x)
         # Get the number of each patch type
@@ -98,16 +102,53 @@ class Codebook:
         return np.array([self._get_histogram(x) for x in X])
 
 
+class FisherVectorBook:
+    def __init__(self, size=64):
+        self.size = size
+        self.clusterer = GaussianMixture(n_components=size, covariance_type='diag')
+
+    def normalize(self, fv):
+        v = np.sqrt(abs(fv)) * np.sign(fv)
+        return v / np.sqrt(np.dot(v, v))
+
+    def _get_predict(self, x):
+        """ Returns histogram of codewords for given features
+            x.shape = [n_descriptor, dscpt_dimension]
+        """
+        fisher_vec = fv.fisher_features(x, self.clusterer)
+        print (fisher_vec.shape)
+        return self.normalize(fisher_vec)
+
+    def fit(self, X, Y=None):
+        """ Fitting Kmeans """
+        print("Fitting GMM ... waiting ...")
+        # print(np.concatenate(X).shape)
+        start = time.clock()
+        self.clusterer.fit(np.concatenate(X))
+        elapsed = time.clock() - start
+        print ('GMM used: %.2f s' % elapsed)
+        return self
+
+    def transform(self, X, Y=None):
+        print (X.shape[0])
+        return np.array([self._get_predict(x) for x in X])
+
+
 # Number of samples to train [0, 50000]
 nsamples = 500
 # Number of samples to test [0, 10000]
-testsamples = 10000
+testsamples = 100
 X = x_train[0:nsamples]
 Y = y_train[0:nsamples]
 Y = Y.reshape(-1)
+
 patcher = PatchExtractor(patch_size=(8, 8))
 sift = SiftExtractor()
-codebook = Codebook(size=50)
-clf = svm.SVC(kernel='rbf')
-pipeline = Pipeline([("Feature_extractor", patcher), ("Codebook", codebook), ("svm", clf)])
+fisher = FisherVectorBook(size=64)
+codebook = Codebook(size=64)
+clf = svm.SVC(kernel='rbf', verbose=False)
+
+pipeline = Pipeline([("Feature_extractor", patcher),
+                     ("Codebook", codebook),
+                     ("svm", clf)])
 score(pipeline, X, Y)
